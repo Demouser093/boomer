@@ -14,7 +14,8 @@ usage() {
     -i        Virus Total
     -j        AllDomz
     -k        AllUrls
-    -l        Domains to status codes"
+    -l        Domains to status codes
+    -m        ZipFinder"
     exit 1
 }
 
@@ -222,9 +223,65 @@ CleanDomains() {
     cat $domain | httpx-toolkit -sc -nc -silent -title | tee >(grep "\[3[0-9][0-9]\]" | anew 300s.txt) >(grep "\[4[0-9][0-9]\]" | anew 400s.txt) >(grep "\[5[0-9][0-9]\]" | anew 500s.txt) | grep "\[2[0-9][0-9]\]" | anew 200s.txt
 }
 
+zipfinder(){
+    # Usage function
+    usage() {
+        echo "Usage: zipfinder <domain>"
+        echo "Example: zipfinder example.com"
+        exit 1
+    }
+
+    # Check for -h or missing arguments
+    if [[ $# -eq 0 || $1 == "-h" ]]; then
+        usage
+    fi
+
+    local domain=$1
+    local output_file="wayback_files.txt"
+
+    # Fetch backup-related files
+    echo "=========================================="
+    echo " Searching for backup files on Wayback Machine"
+    echo " Target Domain: $domain"
+    echo "=========================================="
+
+    local result=$(curl -s "https://web.archive.org/cdx/search/cdx?url=*.$domain/*&collapse=urlkey&output=text&fl=original" | \
+    grep -E '\.(zip|bak|tar|tar\.gz|tgz|7z|rar|sql|db|backup|old|gz|bz2)$')
+
+    if [[ -n "$result" ]]; then
+        echo -e "\n[+] Backup files found:\n"
+        echo "Backup files for $domain" > "$output_file"
+        echo "==========================================" >> "$output_file"
+
+        while IFS= read -r url; do
+            local archive_data=$(curl -s "https://web.archive.org/cdx/search/cdx?url=$url&output=json")
+            local timestamp=$(echo "$archive_data" | jq -r '.[1][1]' 2>/dev/null)
+            
+            if [[ "$timestamp" != "null" && -n "$timestamp" ]]; then
+                local snapshot_link="https://web.archive.org/web/$timestamp/$url"
+                echo "[*] File: $url" | tee -a "$output_file"
+                echo "    ➜ Snapshot Available: $snapshot_link" | tee -a "$output_file"
+            else
+                echo "[*] File: $url" | tee -a "$output_file"
+                echo "    ✗ No Snapshot Available" | tee -a "$output_file"
+            fi
+            echo "------------------------------------------" | tee -a "$output_file"
+        done <<< "$result"
+
+        echo "[✓] Results saved to $output_file"
+    else
+        echo "[✗] No backup files found."
+    fi
+
+    echo "=========================================="
+    echo " Done!"
+    echo "=========================================="
+}
+
+
 # Main function to parse options and call appropriate functions
 main() {
-    while getopts ":a:b:c:d:e:f:g:h:i:j:k:l:" opt; do
+    while getopts ":a:b:c:d:e:f:g:h:i:j:k:l:m:" opt; do
         case $opt in
             a) domain_to_ips "$OPTARG" ;;
             b) cidr_to_ips "$OPTARG" ;;
@@ -238,6 +295,7 @@ main() {
             j) AllDomz "$OPTARG" ;;
             k) AllUrls "$OPTARG" ;;
             l) CleanDomains "$OPTARG" ;;
+            m) zipfinder "$OPTARG" ;;
             *) usage ;;
         esac
     done
