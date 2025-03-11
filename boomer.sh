@@ -205,6 +205,7 @@ AllDomz() {
     subfinder -all -recursive -silent -nc -d $domain | anew SubList4.txt
     assetfinder -subs-only $domain | anew SubList5.txt
     subdominator -nc -d $domain | anew SubList6.txt
+    cat SubList1.txt SubList2.txt SubList3.txt SubList4.txt SubList5.txt SubList6.txt | anew subdomains.txt 
 }
 
 # Function for Displaying All urls
