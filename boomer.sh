@@ -247,7 +247,8 @@ zipfinder(){
     echo "=========================================="
 
     local result=$(curl -s "https://web.archive.org/cdx/search/cdx?url=*.$domain/*&collapse=urlkey&output=text&fl=original" | \
-    grep -E '\.(zip|bak|tar|tar\.gz|tgz|7z|rar|sql|db|backup|old|gz|bz2)$')
+    grep -E '\.(zip|bak|tar|tar\.gz|tgz|7z|rar|sql|db|backup|old|gz|bz2|xls|xml|xlsx|json|pdf|doc|docx|pptx|txt|log|cache|secret|yml|config|csv|yaml|md|md5|exe|dll|bin|ini|bat|sh|deb|git|env|rpm|iso|img|apk|msi|dmg|tmp|crt|pem|key|pub|asc)$'
+
 
     if [[ -n "$result" ]]; then
         echo -e "\n[+] Backup files found:\n"
