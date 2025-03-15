@@ -221,7 +221,7 @@ AllUrls() {
 # Function for clearn all domains
 CleanDomains() {
     local domain=$1
-    cat $domain | httpx-toolkit -sc -nc -silent -title | tee >(grep "\[3[0-9][0-9]\]" | anew 300s.txt) >(grep "\[4[0-9][0-9]\]" | anew 400s.txt) >(grep "\[5[0-9][0-9]\]" | anew 500s.txt) | grep "\[2[0-9][0-9]\]" | anew 200s.txt
+    cat $domain | httpx-toolkit -sc -nc -silent -td -title | tee >(grep "\[3[0-9][0-9]\]" | anew 300s.txt) >(grep "\[4[0-9][0-9]\]" | anew 400s.txt) >(grep "\[5[0-9][0-9]\]" | anew 500s.txt) | grep "\[2[0-9][0-9]\]" | anew 200s.txt
 }
 
 zipfinder(){
