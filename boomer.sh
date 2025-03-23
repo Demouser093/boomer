@@ -132,7 +132,7 @@ massCNAME() {
 # Function for Displaying mass CNAME/A
 massPortScan() {
     local filename=$1
-    naabu -silent -nc -l $filename -tp 1000 -ep 21,22,80,443,554,1723
+    naabu -silent -nc -l $filename -tp full -ep 21,22,80,443,554,1723
 }
 
 # Function for Alien URL
