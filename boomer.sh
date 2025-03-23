@@ -221,7 +221,7 @@ AllUrls() {
 # Function for clearn all domains
 CleanDomains() {
     local domain=$1
-    cat $domain | httpx-toolkit -sc -nc -silent -td -title | tee >(grep "\[3[0-9][0-9]\]" | anew 300s.txt) >(grep "\[4[0-9][0-9]\]" | anew 400s.txt) >(grep "\[5[0-9][0-9]\]" | anew 500s.txt) | grep "\[2[0-9][0-9]\]" | anew 200s.txt
+    cat $domain | httpx-toolkit -sc -nc -silent -title | tee >(grep "\[3[0-9][0-9]\]" | anew 300s.txt) >(grep "\[4[0-9][0-9]\]" | anew 400s.txt) >(grep "\[5[0-9][0-9]\]" | anew 500s.txt) | grep "\[2[0-9][0-9]\]" | anew 200s.txt
 }
 
 zipfinder(){
@@ -247,8 +247,8 @@ zipfinder(){
     echo "=========================================="
 
     local result=$(curl -s "https://web.archive.org/cdx/search/cdx?url=*.$domain/*&collapse=urlkey&output=text&fl=original" | \
-    grep -E '\.(zip|bak|tar|tar\.gz|tgz|7z|rar|sql|db|backup|old|gz|bz2|xls|xml|xlsx|json|pdf|doc|docx|pptx|txt|log|cache|secret|yml|config|csv|yaml|md|md5|exe|dll|bin|ini|bat|sh|deb|git|env|rpm|iso|img|apk|msi|dmg|tmp|crt|pem|key|pub|asc)$')
-
+    grep -E '\.(zip|bak|tar|tar\.gz|tgz|7z|rar|sql|db|backup|old|gz|bz2|xls|xml|xlsx|json|pdf|doc|docx|pptx|txt|log|cache|secret|yml|config|csv|yaml|md|md5|exe|dll|bin|ini|bat|sh|deb|git|env|rpm|iso|img|apk|msi|dmg|tmp|crt|pem|key|pub|asc)$' | \
+    grep -Ev '(robots\.txt|sitemap|\.well-known/|ads\.txt)')
 
     if [[ -n "$result" ]]; then
         echo -e "\n[+] Backup files found:\n"
