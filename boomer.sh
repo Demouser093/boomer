@@ -15,7 +15,9 @@ usage() {
     -j        AllDomz
     -k        AllUrls
     -l        Domains to status codes
-    -m        ZipFinder"
+    -m        ZipFinder
+    -n        Domains to status codes [Simple]
+    -o        HTTPX To Specific Status Code Text File [Simple]"
     exit 1
 }
 
@@ -106,6 +108,16 @@ httpx_status_code() {
     echo "Extraction completed."
 }
 
+httpx_status_code_simple() {
+    local input_file="$1"
+    cat "$input_file" | httpx-toolkit -td -sc -nc -silent -title | awk '{print $1, $2}' | while read url status; do  
+        status_code=$(echo "$status" | tr -d '[]')  
+        echo "$url" >> "${status_code}.txt"  
+    done
+    echo "URLs sorted by status codes."
+}
+
+
 # Function for Downloading Directory Listing Enabled website Content
 directory_listing() {
     local URL="$1"
@@ -132,7 +144,7 @@ massCNAME() {
 # Function for Displaying mass CNAME/A
 massPortScan() {
     local filename=$1
-    naabu -silent -nc -l $filename -tp full -ep 21,22,80,443,554,1723
+    naabu -silent -nc -l $filename -tp 1000 -ep 21,22,80,443,554,1723
 }
 
 # Function for Alien URL
@@ -205,7 +217,7 @@ AllDomz() {
     subfinder -all -recursive -silent -nc -d $domain | anew SubList4.txt
     assetfinder -subs-only $domain | anew SubList5.txt
     subdominator -nc -d $domain | anew SubList6.txt
-    cat SubList1.txt SubList2.txt SubList3.txt SubList4.txt SubList5.txt SubList6.txt | anew subdomains.txt 
+    cat SubList1.txt SubList2.txt SubList3.txt SubList4.txt SubList5.txt SubList6.txt | anew subs.txt 
 }
 
 # Function for Displaying All urls
@@ -223,6 +235,17 @@ CleanDomains() {
     local domain=$1
     cat $domain | httpx-toolkit -td -sc -nc -silent -title | tee >(grep "\[3[0-9][0-9]\]" | anew 300s.txt) >(grep "\[4[0-9][0-9]\]" | anew 400s.txt) >(grep "\[5[0-9][0-9]\]" | anew 500s.txt) | grep "\[2[0-9][0-9]\]" | anew 200s.txt
 }
+
+CleanDomains_Simple() {
+    local input_file="$1"
+    cat "$input_file" | httpx-toolkit -td -sc -nc -silent -title | awk '{print $1, $2}' | tee \
+        >(grep "\[3[0-9][0-9]\]" | awk '{print $1}' | anew 300s.txt) \
+        >(grep "\[4[0-9][0-9]\]" | awk '{print $1}' | anew 400s.txt) \
+        >(grep "\[5[0-9][0-9]\]" | awk '{print $1}' | anew 500s.txt) \
+        | grep "\[2[0-9][0-9]\]" | awk '{print $1}' | anew 200s.txt
+    echo "URLs categorized by status codes."
+}
+
 
 zipfinder(){
     # Usage function
@@ -283,7 +306,7 @@ zipfinder(){
 
 # Main function to parse options and call appropriate functions
 main() {
-    while getopts ":a:b:c:d:e:f:g:h:i:j:k:l:m:" opt; do
+    while getopts ":a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:" opt; do
         case $opt in
             a) domain_to_ips "$OPTARG" ;;
             b) cidr_to_ips "$OPTARG" ;;
@@ -298,6 +321,8 @@ main() {
             k) AllUrls "$OPTARG" ;;
             l) CleanDomains "$OPTARG" ;;
             m) zipfinder "$OPTARG" ;;
+            n) CleanDomains_Simple "$OPTARG" ;;
+            o) httpx_status_code_simple "$OPTARG" ;;
             *) usage ;;
         esac
     done
